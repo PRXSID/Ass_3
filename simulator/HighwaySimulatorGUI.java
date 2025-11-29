@@ -43,6 +43,7 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
     
     private JCheckBox syncModeCheckBox;
     private JTextArea logArea;
+    private JLabel modeLabel;
     
     // Tracking expected total
     private int expectedTotal = 0;
@@ -252,7 +253,7 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
         discrepancyLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         discrepancyLabel.setForeground(Color.GREEN);
         
-        JLabel modeLabel = new JLabel("Mode: Unsynchronized");
+        modeLabel = new JLabel("Mode: Unsynchronized");
         modeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         modeLabel.setFont(new Font("Arial", Font.ITALIC, 12));
         
@@ -397,11 +398,13 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
             }
         }
         
-        // Wait for threads to finish
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        // Wait for threads to finish properly using join
+        for (SimulationVehicle vehicle : vehicles) {
+            try {
+                vehicle.join(1000); // Wait up to 1 second for each thread
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
         
         // Reset counter
@@ -442,6 +445,7 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
     private void toggleSyncMode() {
         boolean enabled = syncModeCheckBox.isSelected();
         HighwayDistanceCounter.setSynchronizationMode(enabled);
+        modeLabel.setText("Mode: " + (enabled ? "Synchronized" : "Unsynchronized"));
         log("Synchronization mode: " + (enabled ? "ENABLED (using ReentrantLock)" : "DISABLED (race condition possible)"));
     }
     

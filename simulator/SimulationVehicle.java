@@ -9,8 +9,8 @@ public class SimulationVehicle extends Thread {
     
     // Vehicle properties
     private final String vehicleId;
-    private double mileage;
-    private double fuelLevel;
+    private volatile double mileage;
+    private volatile double fuelLevel;
     private final double maxFuel;
     
     // Vehicle status
@@ -133,7 +133,7 @@ public class SimulationVehicle extends Thread {
     /**
      * Refuels the vehicle
      */
-    public void refuel(double amount) {
+    public synchronized void refuel(double amount) {
         fuelLevel = Math.min(fuelLevel + amount, maxFuel);
         if (fuelLevel > 0 && status == Status.OUT_OF_FUEL) {
             status = Status.PAUSED;
@@ -143,7 +143,7 @@ public class SimulationVehicle extends Thread {
     /**
      * Refuels the vehicle to maximum capacity
      */
-    public void refuelFull() {
+    public synchronized void refuelFull() {
         fuelLevel = maxFuel;
         if (status == Status.OUT_OF_FUEL) {
             status = Status.PAUSED;

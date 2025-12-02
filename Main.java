@@ -251,7 +251,7 @@ public class Main {
                 System.out.print("Enter fuel amount to add: ");
                 double fuel = readDouble(sc);
                 fleetManager.refuelAll(fuel);
-                System.out.println("All vehicles refueled successfully.");
+                System.out.println("Refuel operation completed.");
             }
 
             // PERFORM MAINTENANCE 

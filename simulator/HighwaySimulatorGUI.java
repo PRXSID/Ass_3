@@ -267,7 +267,6 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
         return panel;
     }
     
-
     /**
      * Sets up a timer to periodically update the UI
      */
@@ -486,7 +485,6 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
         return total;
     }
     
-
     /**
      * Callback from vehicle threads
      */

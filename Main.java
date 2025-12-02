@@ -5,6 +5,8 @@ import concreteclasses.*;
 import fleetmanager.*;
 import interfaces.*;
 import exceptions.*;
+import simulator.*;
+import javax.swing.*;
 
 public class Main {
 
@@ -66,13 +68,14 @@ public class Main {
             System.out.println("10. List Vehicles Needing Maintenance");
             System.out.println("11. Sort Vehicles");
             System.out.println("12. Display by Model Name");
-            System.out.println("13. Exit");
+            System.out.println("13. Launch Highway Simulator GUI");
+            System.out.println("14. Exit");
             System.out.print("Enter choice: ");
 
             int choice = readInt(sc);
 
             // Exit option
-            if (choice == 13) {
+            if (choice == 14) {
                 System.out.println("Exiting System.");
                 break;
             }
@@ -247,12 +250,8 @@ public class Main {
             else if (choice == 4) {
                 System.out.print("Enter fuel amount to add: ");
                 double fuel = readDouble(sc);
-                try {
-                    fleetManager.refuelAll(fuel);
-                    System.out.println("All vehicles refueled successfully.");
-                } catch (InvalidOperationException e) {
-                    System.out.println("Error during refueling: " + e.getMessage());
-                }
+                fleetManager.refuelAll(fuel);
+                System.out.println("Refuel operation completed.");
             }
 
             // PERFORM MAINTENANCE 
@@ -363,6 +362,22 @@ public class Main {
             // DISPLAY BY MODEL
             else if (choice == 12) {
                 fleetManager.displayByModelName();
+            }
+
+            // LAUNCH HIGHWAY SIMULATOR GUI
+            else if (choice == 13) {
+                System.out.println("Launching Highway Simulator GUI...");
+                SwingUtilities.invokeLater(() -> {
+                    try {
+                        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                    } catch (Exception e) {
+                        // Use default look and feel
+                    }
+                    
+                    HighwaySimulatorGUI gui = new HighwaySimulatorGUI();
+                    gui.setVisible(true);
+                });
+                System.out.println("Highway Simulator GUI launched in a separate window.");
             }
 
             // INVALID CHOICE

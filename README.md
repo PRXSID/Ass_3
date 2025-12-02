@@ -1,336 +1,113 @@
-# Fleet Highway Simulator
+# Fleet Management System with Highway Simulator
 
-## Assignment 3 - Multithreading and GUI with Race Condition Handling
+A Java-based fleet management system featuring a CLI interface for vehicle operations and a GUI-based highway simulator demonstrating multithreading and race conditions.
 
-### Overview
+## Features
 
-This project implements a Fleet Highway Simulator in Java that demonstrates multithreaded execution through a simulated highway scenario involving multiple vehicles. The simulator provides a graphical user interface (GUI) built using Swing for controlling and observing the simulation.
+- **Fleet Management CLI**: Add, remove, track vehicles and manage fleet operations
+- **Highway Simulator GUI**: Visual demonstration of multithreading and race conditions
+- **Vehicle Types**: Car, Bus, Truck, CargoShip, Airplane
+- **Race Condition Demo**: Toggle between synchronized and unsynchronized modes
 
-The application illustrates a race condition arising from unsynchronized access to a shared resource (Highway Distance Counter) and resolves it using appropriate synchronization techniques (ReentrantLock).
-
----
-
-## Table of Contents
-
-1. [Compilation and Running](#compilation-and-running)
-2. [Design Overview](#design-overview)
-3. [GUI Layout](#gui-layout)
-4. [Thread Control via GUI](#thread-control-via-gui)
-5. [Race Condition Demonstration and Fix](#race-condition-demonstration-and-fix)
-6. [GUI Thread-Safety Considerations](#gui-thread-safety-considerations)
-
----
-
-## Compilation and Running
+## Quick Start
 
 ### Prerequisites
 - Java JDK 8 or higher
-- Terminal/Command Prompt
 
-### Compile the Application
-
-```bash
-# Navigate to the project directory
-cd /path/to/Ass_3
-
-# Compile all source files
-javac -d out simulator/*.java
-
-# Alternatively, compile everything including the base vehicle classes
-javac -d out Main.java vehicles/*.java concreteclasses/*.java interfaces/*.java exceptions/*.java fleetmanager/*.java simulator/*.java
-```
-
-### Run the Simulator
+### Compile
 
 ```bash
-# Run the Highway Simulator GUI
-java -cp out simulator.HighwaySimulatorGUI
+javac Main.java
 ```
 
-### Testing the Race Condition
+This single command compiles all 25+ class files including the GUI components.
 
-1. **Without Synchronization (Default):**
-   - Launch the application
-   - Ensure "Enable Synchronization" checkbox is **unchecked**
-   - Click "Start" to begin the simulation
-   - Observe the discrepancy between "Expected" and actual Highway Distance Counter
-   - The race condition will cause data loss (actual < expected)
+### Run
 
-2. **With Synchronization:**
-   - Launch the application
-   - Check the "Enable Synchronization" checkbox
-   - Click "Start" to begin the simulation
-   - The discrepancy should remain 0 (no data loss)
-
----
-
-## Design Overview
-
-### Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    HighwaySimulatorGUI                          │
-│                (Swing-based User Interface)                     │
-│         Controls: Start, Pause, Resume, Stop, Reset             │
-└─────────────────────────┬───────────────────────────────────────┘
-                          │
-          ┌───────────────┼───────────────┐
-          │               │               │
-          ▼               ▼               ▼
-    ┌──────────┐    ┌──────────┐    ┌──────────┐
-    │ Vehicle  │    │ Vehicle  │    │ Vehicle  │
-    │ Thread 1 │    │ Thread 2 │    │ Thread 3 │
-    └────┬─────┘    └────┬─────┘    └────┬─────┘
-         │               │               │
-         └───────────────┼───────────────┘
-                         │
-                         ▼
-            ┌─────────────────────────┐
-            │  HighwayDistanceCounter │
-            │    (Shared Resource)    │
-            └─────────────────────────┘
+```bash
+java Main
 ```
 
-### Key Classes
+Select option 13 from the menu to launch the Highway Simulator GUI.
 
-1. **HighwaySimulatorGUI** (`simulator/HighwaySimulatorGUI.java`)
-   - Main entry point for the application
-   - Swing-based GUI providing all user controls
-   - Implements `VehicleUpdateCallback` for vehicle state updates
-   - Uses `SwingUtilities.invokeLater()` for thread-safe UI updates
+## CLI Menu Options
 
-2. **SimulationVehicle** (`simulator/SimulationVehicle.java`)
-   - Extends `Thread` class for multithreaded execution
-   - Maintains vehicle properties: ID, mileage, fuel level, status
-   - Runs in its own thread, updating state every second
-   - Updates the shared Highway Distance Counter
+1. Add Vehicle
+2. Remove Vehicle
+3. Start Journey
+4. Refuel All
+5. Perform Maintenance
+6. Generate Report
+7. Save Fleet (CSV)
+8. Load Fleet (CSV)
+9. Search by Type
+10. List Vehicles Needing Maintenance
+11. Sort Vehicles
+12. Display by Model Name
+13. **Launch Highway Simulator GUI**
+14. Exit
 
-3. **HighwayDistanceCounter** (`simulator/HighwayDistanceCounter.java`)
-   - Shared static counter for total highway distance
-   - Provides both unsynchronized and synchronized increment methods
-   - Uses `ReentrantLock` for synchronized access
-   - Demonstrates race condition when unsynchronized
+## Highway Simulator GUI
 
-### Vehicle Properties
+The GUI demonstrates multithreading concepts with three vehicles running simultaneously:
 
-Each vehicle maintains:
-- **Unique Identifier**: Vehicle-1, Vehicle-2, Vehicle-3
-- **Mileage Traveled**: Incremented by 1 km per second
-- **Fuel Remaining**: Decreases by 0.5 units per km
-- **Operational Status**: RUNNING, PAUSED, OUT_OF_FUEL, STOPPED
+**Controls:**
+- Start, Pause All, Resume All, Stop, Reset buttons
+- Enable Synchronization checkbox
+- Individual vehicle refuel buttons
 
----
+**Features:**
+- Real-time vehicle status tracking
+- Shared highway distance counter
+- Race condition visualization
+- Discrepancy detection between expected and actual values
 
-## GUI Layout
+### Testing Race Conditions
+
+**Without Synchronization:**
+1. Uncheck "Enable Synchronization"
+2. Click "Start"
+3. Observe discrepancy between expected and actual distance (data loss occurs)
+
+**With Synchronization:**
+1. Check "Enable Synchronization"
+2. Click "Start"
+3. Observe zero discrepancy (no data loss)
+
+## Project Structure
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        Simulation Controls                               │
-│  [Start] [Pause All] [Resume All] [Stop] [Reset]  ☐ Enable Sync         │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                   │ Highway Statistics   │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐    │                      │
-│  │ Vehicle-1  │ │ Vehicle-2  │ │ Vehicle-3  │    │  Highway Distance    │
-│  │            │ │            │ │            │    │     Counter          │
-│  │ Mileage:   │ │ Mileage:   │ │ Mileage:   │    │      85 km           │
-│  │ 28 km      │ │ 29 km      │ │ 28 km      │    │                      │
-│  │            │ │            │ │            │    │  Race Condition      │
-│  │ Fuel:      │ │ Fuel:      │ │ Fuel:      │    │  Analysis            │
-│  │ 6.0/20.0   │ │ 5.5/20.0   │ │ 6.0/20.0   │    │                      │
-│  │            │ │            │ │            │    │  Expected: 85 km     │
-│  │ Status:    │ │ Status:    │ │ Status:    │    │  Discrepancy: 0 km   │
-│  │ RUNNING    │ │ RUNNING    │ │ RUNNING    │    │                      │
-│  │            │ │            │ │            │    │                      │
-│  │ [Refuel]   │ │ [Refuel]   │ │ [Refuel]   │    │                      │
-│  └────────────┘ └────────────┘ └────────────┘    │                      │
-├─────────────────────────────────────────────────────────────────────────┤
-│                          Simulation Log                                  │
-│ [12:34:56] Starting simulation with 3 vehicles...                       │
-│ [12:34:56] Synchronization mode: DISABLED                               │
-│ [12:34:56] Simulation started!                                          │
-└─────────────────────────────────────────────────────────────────────────┘
+Ass_3/
+├── Main.java                    # Entry point with CLI and GUI launcher
+├── vehicles/                    # Base vehicle classes
+├── concreteclasses/             # Car, Bus, Truck, Airplane, CargoShip
+├── interfaces/                  # FuelConsumable, CargoCarrier, etc.
+├── exceptions/                  # Custom exceptions
+├── fleetmanager/                # Fleet management logic
+└── simulator/                   # GUI and multithreading components
+    ├── HighwaySimulatorGUI.java
+    ├── SimulationVehicle.java
+    └── HighwayDistanceCounter.java
 ```
 
----
+## Technical Highlights
 
-## Thread Control via GUI
+- **Multithreading**: Each vehicle runs in its own thread
+- **Synchronization**: Uses ReentrantLock to prevent race conditions
+- **Thread-Safe GUI**: All UI updates via SwingUtilities.invokeLater()
+- **CSV Support**: Save and load fleet data
+- **Exception Handling**: Custom exceptions for operations
 
-### Control Buttons
+## Vehicle Properties
 
-| Button | Description |
-|--------|-------------|
-| **Start** | Starts all vehicle threads and begins the simulation |
-| **Pause All** | Pauses all running vehicles (threads continue but don't update state) |
-| **Resume All** | Resumes all paused vehicles that have fuel |
-| **Stop** | Stops all threads permanently and displays final results |
-| **Reset** | Resets the entire simulation to initial state |
+Each simulation vehicle tracks:
+- Mileage (increments 1 km/second)
+- Fuel level (decreases 0.5 units/km)
+- Status: RUNNING, PAUSED, OUT_OF_FUEL, STOPPED
 
-### Synchronization Toggle
+## Notes
 
-- **Enable Synchronization Checkbox**: Toggles between synchronized and unsynchronized access to the shared counter
-- Must be set **before** starting the simulation
-- When enabled, uses `ReentrantLock` for thread-safe updates
-
-### Vehicle Refueling
-
-- Each vehicle has a **Refuel** button
-- When clicked, refills the vehicle's fuel to maximum capacity
-- If the vehicle was OUT_OF_FUEL, it automatically resumes running
-
----
-
-## Race Condition Demonstration and Fix
-
-### What is the Race Condition?
-
-A race condition occurs when multiple threads access and modify shared data concurrently without proper synchronization. In our simulator:
-
-```java
-// Unsynchronized increment - RACE CONDITION
-public static void incrementUnsynchronized(int km) {
-    int current = highwayDistance;  // Thread A reads: 10
-    // Context switch to Thread B which also reads 10
-    Thread.sleep(1);                // Simulates processing delay
-    highwayDistance = current + km; // Thread A writes: 11
-    // Thread B also writes: 11 (should be 12!)
-}
-```
-
-### Step 1: Implementing Unsynchronized Access
-
-The `HighwayDistanceCounter` class has:
-```java
-public static int highwayDistance = 0;  // Shared counter
-
-public static void incrementUnsynchronized(int km) {
-    int current = highwayDistance;
-    try { Thread.sleep(1); } catch (InterruptedException e) {}
-    highwayDistance = current + km;  // Race condition!
-}
-```
-
-### Step 2: Recording Incorrect Behavior
-
-When running without synchronization:
-- **Expected Total**: Sum of all vehicle mileages (e.g., 85 km)
-- **Actual Counter**: Lower value due to lost updates (e.g., 72 km)
-- **Discrepancy**: Shows the data loss (e.g., 13 km)
-
-The GUI displays this discrepancy in real-time with red highlighting.
-
-### Step 3: Applying Synchronization
-
-Using `ReentrantLock` for synchronized access:
-
-```java
-private static final ReentrantLock lock = new ReentrantLock();
-
-public static void incrementWithLock(int km) {
-    lock.lock();
-    try {
-        synchronizedHighwayDistance += km;
-    } finally {
-        lock.unlock();
-    }
-}
-```
-
-Alternative using `synchronized` keyword:
-```java
-public static synchronized void incrementSynchronized(int km) {
-    synchronizedHighwayDistance += km;
-}
-```
-
-### Step 4: Validating Correct Behavior
-
-When running with synchronization enabled:
-- **Expected Total** = **Actual Counter**
-- **Discrepancy**: 0 km
-- No data loss occurs
-
----
-
-## GUI Thread-Safety Considerations
-
-### Event Dispatch Thread (EDT)
-
-In Swing, all UI updates must occur on the Event Dispatch Thread. Failure to do so can cause:
-- Visual glitches
-- Race conditions in UI state
-- Potential deadlocks
-
-### Our Implementation
-
-1. **Application Launch**:
-   ```java
-   SwingUtilities.invokeLater(() -> {
-       HighwaySimulatorGUI gui = new HighwaySimulatorGUI();
-       gui.setVisible(true);
-   });
-   ```
-
-2. **UI Updates from Vehicle Threads**:
-   ```java
-   private void updateUI() {
-       SwingUtilities.invokeLater(() -> {
-           // All UI updates happen here on EDT
-           highwayCounterLabel.setText(actual + " km");
-           vehicleMileageLabels[i].setText("Mileage: " + mileage + " km");
-       });
-   }
-   ```
-
-3. **Timer-Based Updates**:
-   - A Swing `Timer` (runs on EDT) periodically polls vehicle states
-   - Avoids flooding EDT with updates from multiple threads
-   - Provides smooth UI refresh at 100ms intervals
-
-4. **Volatile Variables**:
-   - Vehicle status flags (`running`, `paused`) are marked `volatile`
-   - Ensures visibility across threads without full synchronization
-
-### Best Practices Used
-
-- ✅ GUI created on EDT using `SwingUtilities.invokeLater()`
-- ✅ All UI updates wrapped in `SwingUtilities.invokeLater()`
-- ✅ Timer-based polling instead of direct thread callbacks
-- ✅ Volatile flags for thread communication
-- ✅ Proper thread interruption handling
-
----
-
-## Screenshots
-
-Screenshots demonstrating the race condition and its fix should be placed in the `screenshots/` directory:
-
-1. `race_condition_before.png` - Showing discrepancy without synchronization
-2. `race_condition_after.png` - Showing no discrepancy with synchronization
-3. `vehicle_out_of_fuel.png` - Showing OUT_OF_FUEL status and refueling
-4. `final_results.png` - Showing final simulation results
-
----
-
-## Integration with Previous Assignments
-
-This assignment builds upon the vehicle model from Assignments 1 and 2:
-
-- **Package Structure**: Maintains the existing package organization
-  - `vehicles/` - Base vehicle classes (Vehicle, LandVehicle, etc.)
-  - `concreteclasses/` - Concrete implementations (Car, Bus, Truck, etc.)
-  - `interfaces/` - Vehicle interfaces (FuelConsumable, Maintainable, etc.)
-  - `exceptions/` - Custom exceptions
-  - `fleetmanager/` - Fleet management functionality
-  - `simulator/` - **NEW** Highway simulator with multithreading and GUI
-
-- **Simplified Model**: The `SimulationVehicle` class provides a simplified vehicle model specifically designed for the highway simulation, focusing on:
-  - Multithreaded execution
-  - Mileage and fuel tracking
-  - Status management (RUNNING, PAUSED, OUT_OF_FUEL, STOPPED)
-
----
-
-## Author
-
-Assignment 3 - Advanced Programming M2025
+- GUI launches in a separate window while CLI remains responsive
+- Both interfaces can operate simultaneously
+- Race condition is intentionally created with Thread.sleep() for demonstration
+- Synchronization eliminates the race condition completely

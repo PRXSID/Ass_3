@@ -247,12 +247,8 @@ public class Main {
             else if (choice == 4) {
                 System.out.print("Enter fuel amount to add: ");
                 double fuel = readDouble(sc);
-                try {
-                    fleetManager.refuelAll(fuel);
-                    System.out.println("All vehicles refueled successfully.");
-                } catch (InvalidOperationException e) {
-                    System.out.println("Error during refueling: " + e.getMessage());
-                }
+                fleetManager.refuelAll(fuel);
+                System.out.println("All vehicles refueled successfully.");
             }
 
             // PERFORM MAINTENANCE 

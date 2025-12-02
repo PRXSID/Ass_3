@@ -42,7 +42,6 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
     private JButton resetButton;
     
     private JCheckBox syncModeCheckBox;
-    private JTextArea logArea;
     private JLabel modeLabel;
     
     // Tracking expected total
@@ -94,10 +93,6 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
         // Right panel - Highway counter and stats
         JPanel statsPanel = createStatsPanel();
         add(statsPanel, BorderLayout.EAST);
-        
-        // Bottom panel - Log area
-        JPanel logPanel = createLogPanel();
-        add(logPanel, BorderLayout.SOUTH);
     }
     
     /**
@@ -273,24 +268,6 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
     }
     
     /**
-     * Creates the log panel
-     */
-    private JPanel createLogPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Simulation Log"));
-        panel.setPreferredSize(new Dimension(0, 150));
-        
-        logArea = new JTextArea();
-        logArea.setEditable(false);
-        logArea.setFont(new Font("Monospaced", Font.PLAIN, 11));
-        
-        JScrollPane scrollPane = new JScrollPane(logArea);
-        panel.add(scrollPane, BorderLayout.CENTER);
-        
-        return panel;
-    }
-    
-    /**
      * Sets up a timer to periodically update the UI
      */
     private void setupUpdateTimer() {
@@ -301,9 +278,6 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
      * Starts the simulation
      */
     private void startSimulation() {
-        log("Starting simulation with " + NUM_VEHICLES + " vehicles...");
-        log("Synchronization mode: " + (HighwayDistanceCounter.isSynchronizationEnabled() ? "ENABLED" : "DISABLED"));
-        
         for (SimulationVehicle vehicle : vehicles) {
             if (!vehicle.isAlive()) {
                 vehicle.start();
@@ -318,8 +292,6 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
         resumeButton.setEnabled(false);
         stopButton.setEnabled(true);
         syncModeCheckBox.setEnabled(false);
-        
-        log("Simulation started!");
     }
     
     /**
@@ -332,8 +304,6 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
         
         pauseButton.setEnabled(false);
         resumeButton.setEnabled(true);
-        
-        log("Simulation paused.");
     }
     
     /**
@@ -348,8 +318,6 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
         
         pauseButton.setEnabled(true);
         resumeButton.setEnabled(false);
-        
-        log("Simulation resumed.");
     }
     
     /**
@@ -372,19 +340,6 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
         int actual = HighwayDistanceCounter.getDistance();
         int expected = calculateExpectedTotal();
         int discrepancy = expected - actual;
-        
-        log("=== SIMULATION STOPPED ===");
-        log("Final Highway Counter: " + actual + " km");
-        log("Expected Total: " + expected + " km");
-        log("Discrepancy: " + discrepancy + " km");
-        
-        if (!HighwayDistanceCounter.isSynchronizationEnabled() && discrepancy != 0) {
-            log("*** RACE CONDITION DETECTED! ***");
-            log("The unsynchronized access to the shared counter caused data loss.");
-        } else if (HighwayDistanceCounter.isSynchronizationEnabled() && discrepancy == 0) {
-            log("*** SYNCHRONIZATION WORKING CORRECTLY ***");
-            log("The synchronized access prevented race conditions.");
-        }
     }
     
     /**
@@ -435,8 +390,6 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
         resumeButton.setEnabled(false);
         stopButton.setEnabled(false);
         syncModeCheckBox.setEnabled(true);
-        
-        log("Simulation reset. Ready to start again.");
     }
     
     /**
@@ -446,7 +399,6 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
         boolean enabled = syncModeCheckBox.isSelected();
         HighwayDistanceCounter.setSynchronizationMode(enabled);
         modeLabel.setText("Mode: " + (enabled ? "Synchronized" : "Unsynchronized"));
-        log("Synchronization mode: " + (enabled ? "ENABLED (using ReentrantLock)" : "DISABLED (race condition possible)"));
     }
     
     /**
@@ -455,7 +407,6 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
     private void refuelVehicle(int index) {
         SimulationVehicle vehicle = vehicles.get(index);
         vehicle.refuelFull();
-        log(vehicle.getVehicleId() + " refueled to full capacity.");
         updateVehicleDisplay(index);
     }
     
@@ -532,16 +483,6 @@ public class HighwaySimulatorGUI extends JFrame implements SimulationVehicle.Veh
             total += (int) vehicle.getMileage();
         }
         return total;
-    }
-    
-    /**
-     * Logs a message to the log area
-     */
-    private void log(String message) {
-        SwingUtilities.invokeLater(() -> {
-            logArea.append("[" + java.time.LocalTime.now().toString().substring(0, 8) + "] " + message + "\n");
-            logArea.setCaretPosition(logArea.getDocument().getLength());
-        });
     }
     
     /**
